@@ -2,6 +2,10 @@ cd /opt/
 mkdir -p katalog
 cd katalog
 python3 -m venv bot
+source bot/bin/activate
+pip install flask
+deactivate
+
 wget -q https://raw.githubusercontent.com/san-labs21/katalog/main/admin.html
 wget -q https://raw.githubusercontent.com/san-labs21/katalog/main/katalog.html
 wget -q https://raw.githubusercontent.com/san-labs21/katalog/main/app.py
