@@ -22,6 +22,7 @@ def load_data():
                 "kecepatan": "4G",
                 "zona": "Nasional",
                 "bonus": "",
+                "note": "",  # <-- tambahkan field note
                 "whatsapp_text": "Saya ingin memesan paket Internet Harian Rp 10.000"
             },
             {
@@ -33,6 +34,7 @@ def load_data():
                 "kecepatan": "4G",
                 "zona": "Nasional",
                 "bonus": "1GB Musik",
+                "note": "",
                 "whatsapp_text": "Saya ingin memesan paket Internet Mingguan Rp 25.000"
             },
             {
@@ -44,6 +46,7 @@ def load_data():
                 "kecepatan": "4G",
                 "zona": "Nasional",
                 "bonus": "5GB Musik & Video, 2GB Games",
+                "note": "",
                 "whatsapp_text": "Saya ingin memesan paket Internet Bulanan Rp 75.000"
             },
             {
@@ -55,6 +58,7 @@ def load_data():
                 "kecepatan": "4G/5G",
                 "zona": "Nasional",
                 "bonus": "Streaming: Unlimited, Gaming: Low Latency",
+                "note": "",
                 "whatsapp_text": "Saya ingin memesan paket Internet Unlimited Rp 150.000"
             },
             {
@@ -66,6 +70,7 @@ def load_data():
                 "kecepatan": "4G",
                 "zona": "Nasional",
                 "bonus": "",
+                "note": "",
                 "whatsapp_text": "Saya ingin memesan paket Internet Malam Rp 5.000"
             },
             {
@@ -77,6 +82,7 @@ def load_data():
                 "kecepatan": "4G",
                 "zona": "Nasional",
                 "bonus": "Include: Facebook, Instagram, Twitter, WhatsApp",
+                "note": "",
                 "whatsapp_text": "Saya ingin memesan paket Internet Sosmed Rp 8.000"
             }
         ]
@@ -123,8 +129,8 @@ def add_paket():
         data = load_data()
         new_paket = request.get_json()
         
-        # Validasi data yang diperlukan
-        required_fields = ['nama', 'harga', 'kuota', 'masa_aktif', 'kecepatan', 'zona', 'whatsapp_text']
+        # Validasi hanya field yang benar-benar wajib
+        required_fields = ['nama', 'harga', 'kuota', 'masa_aktif', 'whatsapp_text']
         for field in required_fields:
             if field not in new_paket or not new_paket[field]:
                 return jsonify({'error': f'Field {field} wajib diisi'}), 400
@@ -135,7 +141,13 @@ def add_paket():
         else:
             new_id = 1
         
+        # Tambahkan nilai default jika kecepatan/zona/note tidak dikirim
         new_paket['id'] = new_id
+        new_paket.setdefault('kecepatan', '-')      # <-- default jika tidak ada
+        new_paket.setdefault('zona', '-')           # <-- default jika tidak ada
+        new_paket.setdefault('note', '')            # <-- default note kosong
+        new_paket.setdefault('bonus', '')           # <-- aman jika tidak dikirim
+        
         data.append(new_paket)
         
         if save_data(data):
@@ -153,8 +165,8 @@ def update_paket(paket_id):
         data = load_data()
         updated_paket = request.get_json()
         
-        # Validasi data yang diperlukan
-        required_fields = ['nama', 'harga', 'kuota', 'masa_aktif', 'kecepatan', 'zona', 'whatsapp_text']
+        # Validasi hanya field yang benar-benar wajib
+        required_fields = ['nama', 'harga', 'kuota', 'masa_aktif', 'whatsapp_text']
         for field in required_fields:
             if field not in updated_paket or not updated_paket[field]:
                 return jsonify({'error': f'Field {field} wajib diisi'}), 400
@@ -169,6 +181,13 @@ def update_paket(paket_id):
         if paket_index is not None:
             # Update paket dengan ID yang sama
             updated_paket['id'] = paket_id
+            
+            # Tambahkan nilai default jika kecepatan/zona/note tidak dikirim
+            updated_paket.setdefault('kecepatan', '-')
+            updated_paket.setdefault('zona', '-')
+            updated_paket.setdefault('note', '')
+            updated_paket.setdefault('bonus', '')
+            
             data[paket_index] = updated_paket
             
             if save_data(data):
@@ -220,4 +239,4 @@ if __name__ == '__main__':
     print("API: http://localhost:5000/api/paket")
     
     # Jalankan server di host 0.0.0.0 agar bisa diakses dari luar
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=3000, debug=True)
