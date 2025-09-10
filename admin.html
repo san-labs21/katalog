@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - Manajemen Paket</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: Poppins, sans-serif;
+            background-color: #1e293b;
+            min-height: 100vh;
+            padding: 20px;
+            color: #f0f0f0;
+        }
+        
+        .header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            color: #e8bd4c;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #324154;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #e8bd4c;
+        }
+        
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 5px;
+            border: 1px solid #4a5568;
+            background: #1e293b;
+            color: #f0f0f0;
+            font-size: 16px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-save {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-save:hover {
+            background: #219653;
+        }
+        
+        .btn-reset {
+            background: #e8bd4c;
+            color: #1e293b;
+        }
+        
+        .btn-reset:hover {
+            background: #d8ad3c;
+        }
+        
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+            display: none;
+        }
+        
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+        
+        .paket-list {
+            margin-top: 50px;
+        }
+        
+        .paket-list h2 {
+            color: #e8bd4c;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 24px;
+        }
+        
+        .paket-item {
+            background: #1e293b;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .paket-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .paket-info {
+            flex: 1;
+        }
+        
+        .paket-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #f0f0f0;
+        }
+        
+        .paket-price {
+            color: #e8bd4c;
+            font-weight: 600;
+        }
+        
+        .paket-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-edit, .btn-remove {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn-edit {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-edit:hover {
+            background: #2980b9;
+        }
+        
+        .btn-remove {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-remove:hover {
+            background: #c0392b;
+        }
+        
+        .message {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+        
+        .message.success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .message.error {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #f0f0f0;
+        }
+        
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 30px;
+            color: #e8bd4c;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        
+        .back-link:hover {
+            color: #d8ad3c;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>SANSTORE ADMIN</h1>
+        <p>Kelola Paket Kuota Internet</p>
+    </div>
+    
+    <div class="container">
+        <div id="messageContainer"></div>
+        
+        <form id="paketForm">
+            <input type="hidden" id="paketId">
+            
+            <div class="form-group">
+                <label for="namaPaket">Nama Paket *</label>
+                <input type="text" id="namaPaket" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="hargaPaket">Harga (Rp) *</label>
+                <input type="number" id="hargaPaket" min="0" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="kuota">Kuota *</label>
+                <input type="text" id="kuota" placeholder="Contoh: 1GB, 5GB, Unlimited" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="masaAktif">Masa Aktif *</label>
+                <input type="text" id="masaAktif" placeholder="Contoh: 1 Hari, 7 Hari, 30 Hari" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="kecepatan">Kecepatan *</label>
+                <input type="text" id="kecepatan" placeholder="Contoh: 4G, 4G/5G" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="zona">Zona *</label>
+                <input type="text" id="zona" placeholder="Contoh: Nasional" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="bonus">Bonus (pisahkan dengan koma, kosongkan jika tidak ada)</label>
+                <input type="text" id="bonus" placeholder="Contoh: 1GB Musik, 2GB Games">
+            </div>
+            
+            <div class="form-group">
+                <label for="whatsappText">Teks Pesan WhatsApp *</label>
+                <input type="text" id="whatsappText" placeholder="Contoh: Saya ingin memesan paket Internet Harian Rp 10.000" required>
+            </div>
+            
+            <div class="btn-group">
+                <button type="submit" class="btn btn-save" id="saveBtn">Simpan Paket</button>
+                <button type="button" class="btn btn-reset" id="resetBtn">Reset Form</button>
+                <button type="button" class="btn btn-delete" id="deleteBtn">Hapus Paket</button>
+            </div>
+        </form>
+        
+        <div class="paket-list">
+            <h2>Daftar Paket</h2>
+            <div id="paketListContainer">
+                <div class="loading">Memuat daftar paket...</div>
+            </div>
+        </div>
+    </div>
+    
+    <a href="/" class="back-link">← Kembali ke Katalog</a>
+
+    <script>
+        // DOM Elements
+        const paketForm = document.getElementById('paketForm');
+        const paketListContainer = document.getElementById('paketListContainer');
+        const saveBtn = document.getElementById('saveBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const deleteBtn = document.getElementById('deleteBtn');
+        const paketIdInput = document.getElementById('paketId');
+        const messageContainer = document.getElementById('messageContainer');
+        
+        // URL API
+        const API_URL = '/api/paket';
+        
+        // Load data dari API
+        async function loadPaketData() {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error('Gagal mengambil data paket');
+                }
+                const paketData = await response.json();
+                renderPaketList(paketData);
+                return paketData;
+            } catch (error) {
+                console.error('Error:', error);
+                paketListContainer.innerHTML = '<div class="error">Gagal memuat data. Pastikan server berjalan.</div>';
+                showMessage('Gagal memuat data: ' + error.message, 'error');
+                return [];
+            }
+        }
+        
+        // Render daftar paket
+        function renderPaketList(paketData) {
+            if (!paketData || paketData.length === 0) {
+                paketListContainer.innerHTML = '<div style="text-align: center; padding: 20px;">Belum ada paket tersedia.</div>';
+                return;
+            }
+            
+            let html = '';
+            paketData.forEach(paket => {
+                html += `
+                    <div class="paket-item">
+                        <div class="paket-info">
+                            <div class="paket-name">${paket.nama}</div>
+                            <div class="paket-price">Rp ${parseInt(paket.harga).toLocaleString()}</div>
+                        </div>
+                        <div class="paket-actions">
+                            <button class="btn-edit" onclick="editPaket(${paket.id})">Edit</button>
+                            <button class="btn-remove" onclick="deletePaket(${paket.id})">Hapus</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            paketListContainer.innerHTML = html;
+        }
+        
+        // Edit paket
+        async function editPaket(id) {
+            try {
+                const response = await fetch(`${API_URL}/${id}`);
+                if (!response.ok) {
+                    throw new Error('Gagal mengambil data paket');
+                }
+                const paket = await response.json();
+                
+                paketIdInput.value = paket.id;
+                document.getElementById('namaPaket').value = paket.nama;
+                document.getElementById('hargaPaket').value = paket.harga;
+                document.getElementById('kuota').value = paket.kuota;
+                document.getElementById('masaAktif').value = paket.masa_aktif;
+                document.getElementById('kecepatan').value = paket.kecepatan;
+                document.getElementById('zona').value = paket.zona;
+                document.getElementById('bonus').value = paket.bonus || '';
+                document.getElementById('whatsappText').value = paket.whatsapp_text;
+                
+                deleteBtn.style.display = 'inline-block';
+                window.scrollTo(0, 0);
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Gagal mengambil data paket: ' + error.message, 'error');
+            }
+        }
+        
+        // Hapus paket
+        async function deletePaket(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus paket ini?')) {
+                try {
+                    const response = await fetch(`${API_URL}/${id}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Gagal menghapus paket');
+                    }
+                    
+                    showMessage('Paket berhasil dihapus!', 'success');
+                    resetForm();
+                    loadPaketData(); // Refresh daftar
+                } catch (error) {
+                    console.error('Error:', error);
+                    showMessage('Gagal menghapus paket: ' + error.message, 'error');
+                }
+            }
+        }
+        
+        // Reset form
+        function resetForm() {
+            paketForm.reset();
+            paketIdInput.value = '';
+            deleteBtn.style.display = 'none';
+        }
+        
+        // Tampilkan pesan
+        function showMessage(text, type) {
+            messageContainer.innerHTML = `<div class="message ${type}">${text}</div>`;
+            const messageEl = messageContainer.querySelector('.message');
+            if (messageEl) {
+                messageEl.style.display = 'block';
+                
+                // Sembunyikan pesan setelah 5 detik
+                setTimeout(() => {
+                    messageEl.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        // Event listener untuk form submit
+        paketForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const paketDataForm = {
+                nama: document.getElementById('namaPaket').value,
+                harga: parseInt(document.getElementById('hargaPaket').value),
+                kuota: document.getElementById('kuota').value,
+                masa_aktif: document.getElementById('masaAktif').value,
+                kecepatan: document.getElementById('kecepatan').value,
+                zona: document.getElementById('zona').value,
+                bonus: document.getElementById('bonus').value,
+                whatsapp_text: document.getElementById('whatsappText').value
+            };
+            
+            try {
+                let url = API_URL;
+                let method = 'POST';
+                let successMessage = 'Paket baru berhasil ditambahkan!';
+                
+                if (paketIdInput.value) {
+                    url += '/' + paketIdInput.value;
+                    method = 'PUT';
+                    successMessage = 'Paket berhasil diperbarui!';
+                }
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(paketDataForm)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || 'Terjadi kesalahan');
+                }
+                
+                const result = await response.json();
+                showMessage(successMessage, 'success');
+                resetForm();
+                loadPaketData(); // Refresh daftar
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Gagal menyimpan paket: ' + error.message, 'error');
+            }
+        });
+        
+        // Event listener untuk reset button
+        resetBtn.addEventListener('click', resetForm);
+        
+        // Inisialisasi
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPaketData();
+        });
+    </script>
+</body>
+</html>

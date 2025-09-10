@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Katalog Kuota Internet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: Poppins, sans-serif;
+            background-color: #1e293b;
+            min-height: 100vh;
+            width: 100%;
+            padding: 20px;
+        }
+        
+        .header {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            text-align: left;
+            font-size: 25px;
+            color: #e8bd4c;
+            font-weight: 900;
+            margin: 0 0 10px 0;
+        }
+        
+        .header h2 {
+            color: #f0f0f0;
+            font-size: 13px;
+            font-weight: 400;
+        }
+        
+        .katalog-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .paket-item {
+            background: #324154;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .paket-header {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .paket-nama {
+            font-size: 13px;
+            color: #f0f0f0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        
+        .paket-harga {
+            font-size: 13px;
+            color: #e8bd4c;
+            font-weight: bold;
+        }
+        
+        .paket-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+        
+        .paket-detail {
+            font-size: 13px;
+            padding: 15px;
+            background: #1e293b;
+            border-top: 1px solid #324154;
+        }
+        
+        .detail-item {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            color: #f0f0f0;
+        }
+        
+        .detail-item i {
+            margin-right: 10px;
+            color: #e8bd4c;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .pesan-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: #27ae60;
+            color: white;
+            text-align: center;
+            border: none;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-top: 15px;
+            text-decoration: none;
+        }
+        
+        .pesan-btn:hover {
+            background: #219653;
+        }
+        
+        .pesan-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .paket-item.active .paket-content {
+            max-height: 500px;
+        }
+        
+        .paket-item.active .arrow {
+            transform: rotate(180deg);
+        }
+        
+        .arrow {
+            color: #e8bd4c;
+            transition: transform 0.3s ease;
+            margin-left: 10px;
+        }
+        
+        .note {
+            color: #f0f0f0;
+            text-align: center;
+            margin-top: 30px;
+            opacity: 0.7;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #f0f0f0;
+            padding: 50px;
+            font-size: 13px;
+        }
+        
+        .error {
+            text-align: center;
+            color: #e74c3c;
+            padding: 50px;
+            font-size: 13px;
+        }
+        
+        @media (min-width: 768px) {
+            .katalog-container {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>SANSTORE</h1>
+            <h2>Katalog Paket Kuota Internet</h2>
+        </div>
+    </div>
+    
+    <div class="katalog-container" id="katalogContainer">
+        <div class="loading">Memuat data paket...</div>
+    </div>
+    
+    <div class="note">Powered By Sanstore</div>
+
+    <script>
+        // URL API
+        const API_URL = '/api/paket';
+        
+        // Fungsi untuk mengambil data dari API
+        async function loadPaketData() {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error('Gagal mengambil data paket');
+                }
+                const paketData = await response.json();
+                renderPaket(paketData);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('katalogContainer').innerHTML = 
+                    `<div class="error">Gagal memuat data: ${error.message}<br>
+                    Pastikan server Python berjalan di port 5000</div>`;
+            }
+        }
+        
+        // Fungsi untuk merender paket ke katalog
+        function renderPaket(paketData) {
+            if (!paketData || paketData.length === 0) {
+                document.getElementById('katalogContainer').innerHTML = 
+                    '<div class="loading">Belum ada paket tersedia.</div>';
+                return;
+            }
+            
+            let html = '';
+            paketData.forEach(paket => {
+                // Parse bonus menjadi array
+                const bonusItems = paket.bonus ? paket.bonus.split(',').map(b => b.trim()) : [];
+                
+                let bonusHtml = '';
+                bonusItems.forEach(bonus => {
+                    let icon = 'fas fa-gift';
+                    if (bonus.includes('Musik')) icon = 'fas fa-music';
+                    else if (bonus.includes('Video')) icon = 'fas fa-tv';
+                    else if (bonus.includes('Games')) icon = 'fas fa-gamepad';
+                    else if (bonus.includes('Sosmed') || bonus.includes('Facebook') || bonus.includes('Instagram')) icon = 'fab fa-facebook';
+                    else if (bonus.includes('Streaming')) icon = 'fas fa-tv';
+                    else if (bonus.includes('Gaming')) icon = 'fas fa-gamepad';
+                    
+                    bonusHtml += `
+                        <div class="detail-item">
+                            <i class="${icon}"></i>
+                            <span>${bonus}</span>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                    <div class="paket-item" data-id="${paket.id}">
+                        <div class="paket-header">
+                            <div class="paket-nama">${paket.nama} <i class="fas fa-chevron-down arrow"></i></div>
+                            <div class="paket-harga">Rp ${parseInt(paket.harga).toLocaleString()}</div>
+                        </div>
+                        <div class="paket-content">
+                            <div class="paket-detail">
+                                <div class="detail-item">
+                                    <i class="fas fa-wifi"></i>
+                                    <span>Kuota: ${paket.kuota}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Masa Aktif: ${paket.masa_aktif}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-bolt"></i>
+                                    <span>Kecepatan: ${paket.kecepatan}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-globe"></i>
+                                    <span>Zona: ${paket.zona}</span>
+                                </div>
+                                ${bonusHtml}
+                                <a href="https://wa.me/6285155208019?text=${encodeURIComponent(paket.whatsapp_text)}" class="pesan-btn">
+                                    <i class="fab fa-whatsapp"></i> Pesan Sekarang
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('katalogContainer').innerHTML = html;
+            
+            // Tambahkan event listener untuk dropdown
+            document.querySelectorAll('.paket-header').forEach(header => {
+                header.addEventListener('click', function() {
+                    const paketItem = this.parentElement;
+                    
+                    // Tutup dropdown lainnya yang terbuka
+                    document.querySelectorAll('.paket-item').forEach(item => {
+                        if (item !== paketItem) {
+                            item.classList.remove('active');
+                        }
+                    });
+                    
+                    // Buka/tutup dropdown yang diklik
+                    paketItem.classList.toggle('active');
+                });
+            });
+        }
+        
+        // Inisialisasi - load data saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPaketData();
+        });
+    </script>
+</body>
+</html>
