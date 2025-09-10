@@ -256,24 +256,21 @@
                 <input type="text" id="masaAktif" placeholder="Contoh: 1 Hari, 7 Hari, 30 Hari" required>
             </div>
             
-            <div class="form-group">
-                <label for="kecepatan">Kecepatan *</label>
-                <input type="text" id="kecepatan" placeholder="Contoh: 4G, 4G/5G" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="zona">Zona *</label>
-                <input type="text" id="zona" placeholder="Contoh: Nasional" required>
-            </div>
+            <!-- Dihapus: Kecepatan dan Zona -->
             
             <div class="form-group">
                 <label for="bonus">Bonus (pisahkan dengan koma, kosongkan jika tidak ada)</label>
                 <input type="text" id="bonus" placeholder="Contoh: 1GB Musik, 2GB Games">
             </div>
+
+            <div class="form-group">
+                <label for="note">Catatan Tambahan</label>
+                <textarea id="note" rows="3" placeholder="Masukkan catatan tambahan tentang paket ini..."></textarea>
+            </div>
             
             <div class="form-group">
                 <label for="whatsappText">Teks Pesan WhatsApp *</label>
-                <input type="text" id="whatsappText" placeholder="Contoh: Saya ingin memesan paket Internet Harian Rp 10.000" required>
+                <input type="text" id="whatsappText" placeholder="Akan otomatis terisi jika dikosongkan" required>
             </div>
             
             <div class="btn-group">
@@ -302,6 +299,9 @@
         const deleteBtn = document.getElementById('deleteBtn');
         const paketIdInput = document.getElementById('paketId');
         const messageContainer = document.getElementById('messageContainer');
+        const namaPaketInput = document.getElementById('namaPaket');
+        const hargaPaketInput = document.getElementById('hargaPaket');
+        const whatsappTextInput = document.getElementById('whatsappText');
         
         // URL API
         const API_URL = '/api/paket';
@@ -360,14 +360,14 @@
                 const paket = await response.json();
                 
                 paketIdInput.value = paket.id;
-                document.getElementById('namaPaket').value = paket.nama;
-                document.getElementById('hargaPaket').value = paket.harga;
+                namaPaketInput.value = paket.nama;
+                hargaPaketInput.value = paket.harga;
                 document.getElementById('kuota').value = paket.kuota;
                 document.getElementById('masaAktif').value = paket.masa_aktif;
-                document.getElementById('kecepatan').value = paket.kecepatan;
-                document.getElementById('zona').value = paket.zona;
+                // Kecepatan & Zona dihapus
                 document.getElementById('bonus').value = paket.bonus || '';
-                document.getElementById('whatsappText').value = paket.whatsapp_text;
+                document.getElementById('note').value = paket.note || '';
+                whatsappTextInput.value = paket.whatsapp_text || generateWhatsAppText(paket.nama, paket.harga);
                 
                 deleteBtn.style.display = 'inline-block';
                 window.scrollTo(0, 0);
@@ -419,20 +419,41 @@
                 }, 5000);
             }
         }
+
+        // Generate WhatsApp text otomatis
+        function generateWhatsAppText(nama, harga) {
+            return `Saya ingin memesan paket ${nama} seharga Rp ${parseInt(harga).toLocaleString()}`;
+        }
+
+        // Update WhatsApp text secara otomatis saat nama atau harga berubah
+        function updateWhatsAppText() {
+            if (!whatsappTextInput.value.trim()) {
+                whatsappTextInput.value = generateWhatsAppText(namaPaketInput.value, hargaPaketInput.value);
+            }
+        }
+
+        // Event listener untuk update otomatis
+        namaPaketInput.addEventListener('input', updateWhatsAppText);
+        hargaPaketInput.addEventListener('input', updateWhatsAppText);
         
         // Event listener untuk form submit
         paketForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            // Auto-generate WhatsApp text jika kosong
+            if (!whatsappTextInput.value.trim()) {
+                whatsappTextInput.value = generateWhatsAppText(namaPaketInput.value, hargaPaketInput.value);
+            }
+
             const paketDataForm = {
-                nama: document.getElementById('namaPaket').value,
-                harga: parseInt(document.getElementById('hargaPaket').value),
+                nama: namaPaketInput.value,
+                harga: parseInt(hargaPaketInput.value),
                 kuota: document.getElementById('kuota').value,
                 masa_aktif: document.getElementById('masaAktif').value,
-                kecepatan: document.getElementById('kecepatan').value,
-                zona: document.getElementById('zona').value,
+                // kecepatan & zona dihapus
                 bonus: document.getElementById('bonus').value,
-                whatsapp_text: document.getElementById('whatsappText').value
+                note: document.getElementById('note').value,
+                whatsapp_text: whatsappTextInput.value
             };
             
             try {
